@@ -1,0 +1,938 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --panel-bg: rgba(6, 14, 30, 0.82);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --accent: #4FC3F7;
+  --accent-dim: rgba(79, 195, 247, 0.15);
+  --text: #E8EAF0;
+  --text-dim: #8A9ABB;
+  --green: #4CAF50;
+  --yellow: #FFC107;
+  --orange: #FF5722;
+  --red: #F44336;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: var(--text);
+  background: linear-gradient(180deg,
+    #5E9DC0 0%,
+    #5E9DC0 50%,
+    #7B4F2A 50%,
+    #522a19 100%
+  );
+}
+
+/* CENA DE FUNDO  */
+
+.scene {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg,
+    #5E9DC0 0%,
+    #5E9DC0 50%,
+    #7B4F2A 50%,
+    #522a19 100%
+  );
+}
+/*
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle var(--dur, 3s) infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity: var(--min, 0.2); }
+  to   { opacity: var(--max, 0.9); }
+}*/
+
+.mountains {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 260px;
+  background:
+    /* Right mountain */
+    radial-gradient(ellipse 280px 220px at 85% 100%, #1a2a18 0%, transparent 70%),
+    /* Left mountain */
+    radial-gradient(ellipse 300px 200px at 15% 100%, #18261a 0%, transparent 70%),
+    /* Center mountain far -->
+    radial-gradient(ellipse 400px 180px at 50% 100%, #0e1c10 0%, transparent 60%);
+  clip-path: polygon(
+    0% 100%,
+    0% 65%,
+    8% 55%,
+    18% 25%,
+    28% 50%,
+    38% 35%,
+    50% 15%,
+    62% 38%,
+    72% 28%,
+    82% 50%,
+    92% 40%,
+    100% 55%,
+    100% 100%
+  );
+}
+
+.ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 185px;
+  background: linear-gradient(180deg,
+    #2a1808 0%,
+    #1a1005 50%,
+    #0e0a04 100%
+  );
+  border-top: 2px solid #4a2e10;
+  transform-origin: center bottom;
+  will-change: transform;
+  z-index: 3;               /* sobre a base da casa — efeito realista */
+}
+
+/* CASA (background-image + transform para tremor) */
+
+.house-wrapper {
+  position: absolute;
+  inset: 0;                       /* ocupa toda a .scene */
+  transform-origin: center bottom;
+  will-change: transform;
+  z-index: 2;
+
+  background-image: url('images/imagem1.jpeg');
+  background-size: cover;         /* preenche a tela toda */
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  transition: background-image 0.3s;
+}
+
+/* ─── RACHADURAS NO CHÃO ────────────────────────────────────── */
+
+.ground-cracks {
+  position: absolute;       /* dentro da .scene */
+  bottom: 178px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  height: 60px;
+  pointer-events: none;
+  z-index: 4;               /* acima do chão */
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.ground-cracks.visible { opacity: 1; }
+
+.crack {
+  position: absolute;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to top, #1a0a00, transparent);
+  transform-origin: bottom center;
+  border-radius: 2px;
+}
+
+.crack-1 {
+  left: 28%;
+  height: 45px;
+  transform: rotate(-12deg);
+  background: linear-gradient(to top, #8B4513, #3a1a05, transparent);
+}
+
+.crack-2 {
+  left: 50%;
+  height: 55px;
+  transform: rotate(3deg);
+  background: linear-gradient(to top, #8B4513, #3a1a05, transparent);
+}
+
+.crack-3 {
+  left: 70%;
+  height: 40px;
+  transform: rotate(15deg);
+  background: linear-gradient(to top, #8B4513, #3a1a05, transparent);
+}
+
+/* ─── UI OVERLAY ─────────────────────────────────────────────── */
+
+.ui-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: stretch;         /* cada coluna ocupa toda a altura */
+  justify-content: space-between;
+  padding: 20px 24px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* posicionamento dos painéis */
+.left-panel  { align-self: flex-start; pointer-events: all; }
+.right-panel { align-self: flex-start; pointer-events: all; }
+
+/* ─── CAIXA DE INTENSIDADE (esquerda) ───────────────────────── */
+.intensity-box {
+  background: #0e0c0c;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 15px;
+  padding: 6px 16px;
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.intensity-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: #f3efef;
+  line-height: 1;
+}
+
+.intensity-label-text {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff6f6;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 1px;
+}
+
+/* ─── PAINÉIS ────────────────────────────────────────────────── */
+
+.panel {
+  pointer-events: all;
+  width: 272px;
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.panel-icon { font-size: 16px; }
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
+/* ─── MAGNITUDE DISPLAY ─────────────────────────────────────── */
+
+.magnitude-display {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.magnitude-number {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(79, 195, 247, 0.4);
+  transition: color 0.3s, text-shadow 0.3s;
+}
+
+.magnitude-unit {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-top: 4px;
+}
+
+/* ─── INTENSITY BADGE ────────────────────────────────────────── */
+
+.intensity-badge {
+  text-align: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  background: rgba(79, 195, 247, 0.1);
+  border: 1px solid rgba(79, 195, 247, 0.2);
+  color: var(--accent);
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* ─── SCALE BAR ──────────────────────────────────────────────── */
+
+.scale-bar-wrap { margin-bottom: 14px; }
+
+.scale-bar-track {
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.scale-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #4CAF50, #FFC107, #FF5722, #F44336);
+  transition: width 0.2s;
+}
+
+.scale-bar-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+/* ─── RICHTER LEVELS ─────────────────────────────────────────── */
+
+.richter-levels { margin-bottom: 14px; }
+
+.level-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+  transition: background 0.2s;
+}
+
+.level-row.active {
+  background: rgba(255,255,255,0.07);
+}
+
+.level-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.level-info {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.level-range {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.level-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ─── HOUSE STATE INFO ───────────────────────────────────────── */
+
+.house-state-info {
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-dim);
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: color 0.3s;
+}
+
+/* ─── CENTRO ─────────────────────────────────────────────────── */
+
+.center-controls {
+  pointer-events: all;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  align-self: flex-end;
+  padding-bottom: 4px;
+  max-width: 580px;
+  width: 100%;
+}
+
+/* ─── LINHA CONTROLES (slider + sismógrafo) ─────────────────── */
+
+.controls-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+/* ─── SLIDER ─────────────────────────────────────────────────── */
+
+.slider-section {
+  background: transparent;
+  border: none;
+  padding: 8px 0;
+  flex: 1;
+  min-width: 220px;
+}
+
+.slider-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slider-min, .slider-max {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 600;
+  min-width: 14px;
+  text-align: center;
+}
+
+.slider-wrap {
+  flex: 1;
+  position: relative;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg,
+    #4CAF50 0%,
+    #8BC34A 15%,
+    #FFC107 40%,
+    #FF9800 55%,
+    #FF5722 70%,
+    #F44336 100%
+  );
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.5);
+  cursor: grab;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.2);
+  box-shadow: 0 0 0 6px rgba(255,255,255,0.2), 0 2px 12px rgba(0,0,0,0.6);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.5);
+  cursor: grab;
+}
+
+.slider-value-display {
+  display: none;
+}
+
+.slider-value-display span {
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(79,195,247,0.5);
+}
+
+/* ─── BOTÕES ─────────────────────────────────────────────────── */
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-start {
+  background: linear-gradient(135deg, #000000, #000000);
+  color: white;
+  box-shadow: 0 4px 20px #00000066;
+}
+
+.btn-start:hover:not(:disabled) {
+  box-shadow: 0 6px 28px #4b4a4a99;
+}
+
+.btn-stop {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.btn-stop:hover:not(:disabled) {
+  background: rgba(255,255,255,0.18);
+}
+
+.btn-mouse {
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-mouse:hover:not(:disabled) {
+  background: #1a1a1a;
+}
+
+.btn-mouse.active {
+  background: #000000;
+  border-color: var(--accent);
+  box-shadow: 0 0 14px #00000066;
+  animation: mousePulse 1.4s ease-in-out infinite;
+}
+
+@keyframes mousePulse {
+  0%, 100% { box-shadow: 0 0 10px #0000004d; }
+  50%       { box-shadow: 0 0 22px #000000b3; }
+}
+
+/* Cursor crosshair when mouse mode is active */
+body.mouse-mode-active {
+  cursor: crosshair !important;
+}
+
+/* ─── SISMÓGRAFO ─────────────────────────────────────────────── */
+
+.seismograph-container {
+  background: var(--panel-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.seismo-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+#seismograph {
+  display: block;
+  width: 260px;
+  height: 62px;
+  border-radius: 6px;
+  background: rgba(0, 20, 10, 0.8);
+}
+
+/* ─── FÓRMULA ────────────────────────────────────────────────── */
+
+.formula-top-center {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.formula-box {
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.formula-main {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.5;
+}
+
+.formula-vars { margin-bottom: 14px; }
+
+.var-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.var-row:last-child { border-bottom: none; }
+
+.var-symbol {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 24px;
+}
+
+.var-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.divider {
+  height: 1px;
+  background: var(--panel-border);
+  margin: 14px 0;
+}
+
+/* ─── CALCULADORA ────────────────────────────────────────────── */
+
+.calc-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.calc-group {
+  margin-bottom: 10px;
+}
+
+.calc-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.calc-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.calc-input:focus {
+  border-color: rgba(79, 195, 247, 0.5);
+}
+
+/* Remove number input arrows */
+.calc-input::-webkit-outer-spin-button,
+.calc-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.calc-input[type=number] 
+
+.calc-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.btn-calc {
+  flex: 1;
+  padding: 8px 12px;
+  background: rgba(79, 195, 247, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(79, 195, 247, 0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-calc:hover { background: rgba(79, 195, 247, 0.25); }
+
+.btn-apply {
+  flex: 1;
+  padding: 8px 12px;
+  background: rgba(76, 175, 80, 0.15);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-apply:hover:not(:disabled) { background: rgba(76, 175, 80, 0.25); }
+.btn-apply:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.calc-result {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+}
+
+.calc-result span {
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(79,195,247,0.4);
+}
+
+/* ─── EFEITO DE TREMOR NO FUNDO ──────────────────────────────── */
+
+body.shaking-low    { animation: screenShakeLow 0.1s infinite; }
+body.shaking-medium { animation: screenShakeMed 0.08s infinite; }
+body.shaking-high   { animation: screenShakeHigh 0.06s infinite; }
+
+@keyframes screenShakeLow {
+  0%, 100% { filter: brightness(1); }
+  50%       { filter: brightness(1.02); }
+}
+
+@keyframes screenShakeMed {
+  0%, 100% { filter: brightness(1) blur(0px); }
+  50%       { filter: brightness(1.04) blur(0.3px); }
+}
+
+@keyframes screenShakeHigh {
+  0%, 100% { filter: brightness(1) blur(0px); }
+  25%       { filter: brightness(1.06) blur(0.5px); }
+  75%       { filter: brightness(0.97) blur(0.3px); }
+}
+
+/* ─── PAINEL DIREITO (fórmula + hamburger) ───────────────────── */
+
+.right-panel {
+  align-self: flex-start;
+  pointer-events: all;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── BOTÃO HAMBURGER ────────────────────────────────────────── */
+
+.menu-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  background: #000000;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.menu-btn:hover { background: #222222; }
+
+.menu-btn span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 2px;
+}
+
+/* ─── DRAWER LATERAL ─────────────────────────────────────────── */
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: -25vw;
+  width: 25vw;
+  height: 100vh;
+  background: #5E9DC0;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.25);
+  z-index: 50;
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.drawer.open { right: 0; }
+
+.drawer-close {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #444;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  margin-bottom: 16px;
+}
+
+.drawer-close:hover { background: #f0f0f0; }
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  color: #111;
+  font-size: 14px;
+}
+
+.drawer-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #000000;
+  margin-bottom: 10px;
+}
+
+.drawer-formula {
+  margin-bottom: 0;
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.12);
+}
+
+.drawer-formula-text {
+  font-size: 13px;
+  color: #111111;
+}
+
+.drawer-seismo canvas {
+  display: block;
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  background: rgba(0, 20, 10, 0.85);
+}
+
+/* ─── HISTÓRICO DE TERREMOTOS ────────────────────────────────── */
+
+.quake-history {
+  list-style: disc;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quake-item {
+  font-size: 13px;
+  color: #111;
+  cursor: pointer;
+  transition: color 0.15s;
+  user-select: none;
+}
+
+.quake-item:hover {
+  color: #000;
+  text-decoration: underline;
+}
+
+/* ─── OVERLAY ESCURO ─────────────────────────────────────────── */
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 49;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.drawer-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ─── RESPONSIVO BÁSICO ──────────────────────────────────────── */
+
+@media (max-width: 1200px) {
+  .panel { width: 240px; }
+  .slider-section, .seismograph-container { width: 300px; }
+  #seismograph { width: 100%; }
+  .drawer { width: 40vw; right: -40vw; }
+}
